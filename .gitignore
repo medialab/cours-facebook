@@ -1,0 +1,4 @@
+.minetrc
+
+output/*.csv
+input/*.csv
