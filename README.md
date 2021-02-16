@@ -18,6 +18,8 @@ Sur Facebook, CrowdTangle récupère seulement des contenus publics (ni commenta
 
 Leur base de données n'inclut pas automatiquement tous les pages et groupes publics, mais seulement ceux qui ont plus de 100,000 likes, ainsi que les comptes qui ont été ajoutés par les utilisateurs CrowdTangle dans leur dashboard (plus d'explications [ici](https://help.crowdtangle.com/en/articles/1140930-what-data-is-crowdtangle-tracking) et [là](https://help.crowdtangle.com/en/articles/4558716-understanding-and-citing-crowdtangle-data)).
 
+Pour pouvoir utiliser minet crowdtangle, il faut un token CrowdTangle à ajouter en paramètre des commandes ou à ajouter seulement une fois au fichier `.minetrc`. Le fichier `.minetrc.example` montre à quoi devrait ressembler un tel fichier.
+
 Pour afficher toutes les options possibles de minet relatives à CrowdTangle :
 ```
 minet crowdtangle -h
@@ -25,24 +27,78 @@ minet crowdtangle -h
 
 ## 1.1. Les données d'output de CrowdTangle
 
-## 1.2. minet crowdtangle search
+Les données récupérées de `minet crowdtangle` sont toujours structurées de la même façon. Voir un exemple d'output [ici](https://github.com/medialab/cours-facebook/blob/main/output/example_posts.csv). 
+
+Pour plus d'information sur les différentes colonnes voir la [documentation d'API à ce sujet](https://github.com/CrowdTangle/API/wiki/Post).
+
+## 1.2. minet crowdtangle posts-by-id
+
+Il est possible de récupérer ces données pour une liste d'URL de posts Facebook organisées dans un CSV :
+
+```
+minet ct posts-by-id url input/fb_url.csv > output/id_posts.csv
+```
+
+On voit que tous les posts ne sont pas forcément retrouvés, et que les URLs de photos et de vidéos ne sont pas retrouvées non plus.
+
+Dans [la documentation](https://github.com/CrowdTangle/API/wiki/Posts#get-postid), on voit que l'id du post est nécessaire en paramètre de l'API. minet extrait donc l'id du post de son URL, avant de lancer l'appel à l'API pour récupérer les données, ce qui peut mal fonctionner selon l'URL.
 
 ## 1.3. minet crowdtangle posts
 
-## 1.4. minet crowdtangle posts-by-id
+Cette commande permet de récupérer tous les posts publiés par un ensemble de pages ou de groupes publics Facebook. 
+
+- Pour cela il faut d'abord créer une liste sur le dashboard CrowdTangle et y ajouter ces comptes. A noter que si on s'intéresse à des pages et des groupes, il faudra créer deux listes différentes (une pour les pages et une pour les groupes). 
+
+- Ensuite cette commande nous permet de trouver l'id de la liste que nous venons de créer :
+```
+minet ct lists
+```
+
+- Enfin cet id doit être entré en paramètre de la commande pour collecter tous les posts de ces comptes :
+```
+minet ct posts --list-ids my_list_id --start-date 2021-01-01 > output/pages_posts.csv
+```
+
+On peut aussi ajouter une end-date à cette commande. Voir la [documentation](https://github.com/CrowdTangle/API/wiki/Posts) pour plus de détails sur cet endpoint.
+
+## 1.4. minet crowdtangle search
+
+Cette commande permet de chercher des posts dans la base de données CrowdTangle à partir de mots-clés.
+
+```
+minet ct search 'Your page has reduced distribution' --start-date 2021-01-01 --platform facebook > output/reduced_posts.csv
+```
+
+Comme l'endpoint search cherche des posts dans toutes les données CrowdTangle (Facebook, Instagram et Reddit), il faut préciser si l'on cherche seulement des données Facebook.
+
+Par défaut, ces mots-clés sont cherchés dans le contenu textuel des posts et le contenu textuel des images, mais ils peuvent aussi être recherchés dans seulement un de ces champs seulement, dans le nom des comptes ou dans les URLs partagées dans les posts.
+
+```
+minet ct search 'Your page has reduced distribution' --start-date 2021-01-01 --platform facebook --search-field text_fields_only > output/reduced_posts_2.csv
+```
+
+Voir la [documentation](https://github.com/CrowdTangle/API/wiki/Search) pour plus de détails sur cet endpoint.
 
 ## 1.5. minet crowdtangle summary
 
+Cette commande permet de récupérer le total des différentes réactions, commentaires et partages pour une liste d'URLs donnée :
+
+```
+minet ct summary url input/article_url.csv --start-date 2017-01-01 > output/article_summary.csv
+```
+
+Voir la [documentation](https://github.com/CrowdTangle/API/wiki/Links) pour plus de détails sur cet endpoint.
+
 ## 1.6. --resume, une option à connaître
 
-L'option --resume permet de relancer une requête qui s'est interrompue. Par exemple on est en train de récupérer tous les posts d'une liste de pages avec cette commande :
+L'option `--resume` permet de relancer une requête qui s'est interrompue. Par exemple on est en train de récupérer tous les posts d'une liste de pages avec cette commande :
 ```
-minet ct posts --list-ids 1316911 --start-date 2015-01-01 > output/posts.csv
+minet ct posts --list-ids 1491244 --start-date 2015-01-01 > output/posts.csv
 ```
 
 Si la commande s'interrompt on peut la redémarrer en indiquant le nom du fichier créé par la commande précédente :
 ```
-minet ct posts --list-ids 1316911 --start-date 2015-01-01 --resume --output output/posts.csv
+minet ct posts --list-ids 1491244 --start-date 2015-01-01 --resume --output output/posts.csv
 ```
 
 # 2. Scrapper Facebook avec minet facebook
@@ -88,10 +144,10 @@ minet facebook url-likes https://www.fredzone.org/oubli-mot-de-passe-bitcoin-545
 
 On peut aussi récupérer le nombre de likes pour une liste d'URL si elles sont dans un fichier CSV :
 ```
-minet facebook url-likes url input/article_url.csv > output/many_articles_likes.csv
+minet facebook url-likes url input/article_url.csv > output/article_likes.csv
 ```
 
-Cela a l'avantage d'aller plus vite que l'endpoint `/link` de CrowdTangle, avec des données plus complètes (tous les comptes publics et privés sont comptés), mais on n'obtient moins d'informations (seulement les likes).
+Cela a l'avantage d'aller 10 fois plus vite que l'endpoint `/link` de CrowdTangle, avec des données plus complètes (tous les comptes publics et privés sont comptés), mais on obtient des informations moins riches (seulement les likes), et approximatives.
 
 ## 2.3. minet facebook post-stats
 
