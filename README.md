@@ -139,12 +139,12 @@ Cette fonctionnalité permet de scrapper le bouton like de Facebook pour récup�
 Ainsi cette commande minet peut récupérer le nombre de likes approximatif pour une URL donnée :
 
 ```
-minet facebook url-likes https://www.fredzone.org/oubli-mot-de-passe-bitcoin-545 > output/bitcoin_article_likes.csv
+minet fb url-likes https://www.fredzone.org/oubli-mot-de-passe-bitcoin-545 > output/bitcoin_article_likes.csv
 ```
 
 On peut aussi récupérer le nombre de likes pour une liste d'URL si elles sont dans un fichier CSV :
 ```
-minet facebook url-likes url input/article_url.csv > output/article_likes.csv
+minet fb url-likes url input/article_url.csv > output/article_likes.csv
 ```
 
 Cela a l'avantage d'aller 10 fois plus vite que l'endpoint `/link` de CrowdTangle, avec des données plus complètes (tous les comptes publics et privés sont comptés), mais on obtient des informations moins riches (seulement les likes), et approximatives.
@@ -154,7 +154,7 @@ Cela a l'avantage d'aller 10 fois plus vite que l'endpoint `/link` de CrowdTangl
 On peut aussi scrapper Facebook pour récupérer des données liées à un post précis telles que le contenu du post, le nombre de commentaires, de partages, de réactions (like, love, wow, etc).
 
 ```
-minet facebook post-stats url input/fb_url.csv > many_posts_stats.csv
+minet fb post-stats url input/fb_url.csv > output/many_posts_stats.csv
 ```
 
 # 3. Avantages et inconvénients des deux méthodes
